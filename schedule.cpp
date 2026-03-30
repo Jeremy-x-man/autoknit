@@ -71,7 +71,7 @@ struct CycleIndex {
 };
 
 
-int main(int argc, char **argv) {
+int schedule_main(int argc, char **argv) {
 	std::string in_st = "";
 	std::string out_js = "";
 	std::string out_st = "";

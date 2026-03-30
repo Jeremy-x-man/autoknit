@@ -4,3 +4,14 @@ dist/
 kit-libs-win/
 kit-libs-linux/
 maek-cache.json
+
+# CMake build directory
+build/
+
+# Test output files
+test-sample.st
+test-sample.js
+test-sample.k
+
+# npm
+node_modules/

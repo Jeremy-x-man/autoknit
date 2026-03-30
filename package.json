@@ -1,0 +1,25 @@
+{
+  "name": "autoknit",
+  "version": "1.0.0",
+  "description": "A re-implementation of [\"Automatic Machine Knitting of 3D Meshes\"](https://textiles-lab.github.io/publications/2018-autoknit/). Does not match the code used in the paper exactly, but is close in most regards.",
+  "main": "index.js",
+  "scripts": {
+    "build": "cmake-js compile",
+    "test": "node test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Jeremy-x-man/autoknit.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Jeremy-x-man/autoknit/issues"
+  },
+  "homepage": "https://github.com/Jeremy-x-man/autoknit#readme",
+  "dependencies": {
+    "cmake-js": "^8.0.0",
+    "node-addon-api": "^8.7.0"
+  }
+}
