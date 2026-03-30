@@ -15,3 +15,4 @@ test-sample.k
 
 # npm
 node_modules/
+/kit/nest-libs
