@@ -1,0 +1,36 @@
+SubDir TOP kit ;
+
+MySubDir TOP kit ;
+
+local NAMES =
+	kit.cpp #basic kit stuff
+	kit-SDL2.cpp #kit SDL2 backend
+	Button.cpp
+	#resource loading:
+	Load.cpp
+	MeshBuffer.cpp
+	BoneAnimation.cpp
+	#GL wrappers:
+	GLProgram.cpp
+	#path utils:
+	path.cpp
+	#png utils:
+	load_save_png.cpp
+	;
+
+if $(KIT_USE_JPEG) = 1 {
+	NAMES += load_save_jpeg.cpp ;
+}
+
+if $(OS) = NT {
+	NAMES += gl_shims.cpp ;
+}
+
+if $(OS) = MACOSX {
+	CCFLAGS = $(C++FLAGS) ;
+	NAMES += kit-SDL2-osx.mm ;
+}
+
+MyObjects $(NAMES) ;
+
+KIT_OBJECTS = $(NAMES:D=$(LOCATE_TARGET):S=$(SUFOBJ)) ;

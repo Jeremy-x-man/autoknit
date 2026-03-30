@@ -2,15 +2,18 @@
 
 本文档说明如何使用 **CMake** 将 C++ 代码编译为库，并通过 **Node.js** 方式运行 JS 代码。
 
+> **注意**：本项目已将 `kit` 和 `eigen` 从 git submodule 改为直接内嵌代码，克隆后无需执行 `git submodule update`。
+
 ---
 
 ## 构建架构概览
 
 ```
 autoknit/
-├── CMakeLists.txt          ← 根 CMake 配置（核心改动）
+├── CMakeLists.txt          ← 根 CMake 配置
 ├── libgeodesic/
 │   └── CMakeLists.txt      ← libgeodesic 子库 CMake 配置
+├── kit/                    ← kit 库代码（直接内嵌，非 submodule）
 ├── addon.cpp               ← Node.js Native Addon 绑定层
 ├── index.js                ← Node.js 入口（封装 C++ 接口）
 ├── test-schedule.js        ← schedule 功能测试脚本
@@ -31,36 +34,33 @@ autoknit/
 
 ## 环境依赖
 
-### 系统依赖
+### 系统依赖（apt）
 
 ```bash
-# Ubuntu/Debian
-sudo apt-get install -y cmake build-essential libeigen3-dev libpng-dev
+sudo apt-get install -y \
+    cmake build-essential \
+    libeigen3-dev \
+    libglm-dev \
+    libpng-dev \
+    zlib1g-dev \
+    libgl-dev
+```
 
-# SDL3（需从源码编译，版本 3.1.3+）
+### SDL3（需从源码编译）
+
+```bash
 git clone https://github.com/libsdl-org/SDL.git -b preview-3.1.3
 cd SDL && mkdir build && cd build
 cmake .. -DBUILD_SHARED_LIBS=ON -DCMAKE_POSITION_INDEPENDENT_CODE=ON
-make -j4 && sudo make install
+make -j$(nproc) && sudo make install
 sudo ldconfig
 ```
-
-### nest-libs（GLM、libpng、zlib）
-
-```bash
-cd /home/ubuntu
-wget https://github.com/15-466/nest-libs/releases/download/v0.14/nest-libs-linux-v0.14.tar.gz
-tar -xzf nest-libs-linux-v0.14.tar.gz
-# 解压后目录为 /home/ubuntu/nest-libs/linux/
-```
-
-> **注意**：CMakeLists.txt 中 `NEST_LIBS` 路径默认为 `${CMAKE_CURRENT_SOURCE_DIR}/../nest-libs/linux`，即 autoknit 同级目录下的 `nest-libs/linux`。
 
 ### Node.js 依赖
 
 ```bash
 npm install
-# 安装 cmake-js 和 node-addon-api
+# 自动安装 cmake-js 和 node-addon-api
 ```
 
 ---
@@ -70,10 +70,10 @@ npm install
 ```bash
 cd autoknit
 
-# 安装 Node.js 依赖（含 cmake-js、node-addon-api）
+# 1. 安装 Node.js 依赖
 npm install
 
-# 使用 cmake-js 编译 C++ 扩展
+# 2. 使用 cmake-js 编译 C++ 扩展
 npm run build
 ```
 
@@ -125,20 +125,20 @@ const ret = autoknit.interface({
 ```bash
 # 1. 运行 autoknit 界面，生成 .st 文件（需图形环境）
 node -e "require('./index.js').interface({
-    obj: '../autoknit-tests/models/misc-cactus.obj',
-    constraints: 'misc-cactus.cons',
+    obj: 'model.obj',
+    constraints: 'model.cons',
     objScale: 10.0,
     stitchWidth: 3.66,
     stitchHeight: 1.73,
-    saveTraced: 'misc-cactus.st',
+    saveTraced: 'model.st',
     peelTest: -1
 })"
 
 # 2. 运行 schedule，将 .st 转换为 .js 编织指令
-node test-schedule.js misc-cactus.st misc-cactus.js
+node test-schedule.js model.st model.js
 
 # 3. 运行生成的 JS 文件，输出 .k knitout 文件
-node misc-cactus.js
+node model.js
 ```
 
 ---
@@ -164,7 +164,31 @@ node test-sample.js
 | 方面 | 原始（Maekfile.js） | 新方案（CMake + Node.js） |
 |------|---------------------|--------------------------|
 | 构建工具 | 自定义 Maek（Node.js 脚本） | CMake 3.14+ 标准构建系统 |
+| 依赖管理 | nest-libs + git submodule | 系统 apt 包（无外部子模块） |
 | 输出产物 | 独立可执行文件（`dist/interface`, `dist/schedule`） | Node.js 扩展模块（`autoknit_node.node`） |
 | 调用方式 | 命令行子进程 | Node.js `require()` 直接调用 |
 | 跨平台 | 需要手动适配 | CMake 自动处理 |
 | 集成性 | 独立进程，需要 IPC | 同进程调用，无需序列化 |
+
+---
+
+## 常见问题
+
+**Q: `libSDL3.so.0: cannot open shared object file`**
+
+SDL3 安装后需更新动态链接库缓存：
+```bash
+sudo ldconfig
+```
+
+**Q: `cmake: command not found`**
+
+```bash
+sudo apt-get install -y cmake
+```
+
+**Q: `node-addon-api` 找不到**
+
+```bash
+npm install
+```
